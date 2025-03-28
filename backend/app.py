@@ -1,12 +1,15 @@
 import os, ssl, certifi
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from PIL import Image
+from PIL import Image, ImageFile
 import torch
 import torch.nn as nn
 import pandas as pd
 from torchvision import transforms, models
 from torchvision.models import EfficientNet_B0_Weights
+
+Image.MAX_IMAGE_PIXELS = None  # ✅ 큰 이미지 제한 해제
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=certifi.where())
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
