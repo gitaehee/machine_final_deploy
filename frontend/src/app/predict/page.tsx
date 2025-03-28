@@ -92,16 +92,17 @@ export default function PredictPage() {
       </button>
 
       {result && (
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold mb-2">🔮 예측 결과 (Top 3)</h2>
+        result.length === 1 && result[0].label === "해당되는 사조가 없습니다" ? (
+          <p className="text-red-500 mt-4">😥 {result[0].label} (확률: {result[0].confidence})</p>
+        ) : (
           <ul className="list-disc pl-6">
-            {result.map((item, idx) => (
+              {result.map((item, idx) => (
               <li key={idx}>
-                {idx + 1}위: <strong>{item.label}</strong> ({(item.confidence * 100).toFixed(2)}%)
+                  {idx + 1}위: <strong>{item.label}</strong> (확률: {item.confidence})
               </li>
-            ))}
+              ))}
           </ul>
-        </div>
+        )
       )}
     </div>
   )

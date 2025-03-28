@@ -48,18 +48,22 @@ val_transform = transforms.Compose([
 ])
 
 # 🔮 예측 함수
-def predict(image):
+def predict(image, threshold=0.5):
     image = val_transform(image).unsqueeze(0).to(device)
     with torch.no_grad():
         outputs = model(image)
         probs = nn.Softmax(dim=1)(outputs)
         top3_probs, top3_indices = torch.topk(probs, 3, dim=1)
 
+    top1_prob = top3_probs[0][0].item()
+    if top1_prob < threshold:
+        return [{"label": "해당되는 사조가 없습니다", "confidence": round(top1_prob, 4)}]
+
     top3 = []
     for prob, idx in zip(top3_probs[0], top3_indices[0]):
         top3.append({
             "label": idx2label[idx.item()],
-            "confidence": round(prob.item(), 4)
+            "confidence": round(prob.item(), 4)  # ✅ 퍼센트 X, 그대로 확률
         })
     return top3
 
@@ -73,11 +77,12 @@ def predict_api():
     file = request.files['image']
     print(f"📸 받은 파일 이름: {file.filename}")
     
+    
     try:
         image = Image.open(file.stream).convert("RGB")
         print("✅ 이미지 열기 성공")
 
-        results = predict(image)
+        results = predict(image, threshold=0.5)
         print(f"🔮 예측 결과: {results}")
         return jsonify({"top3": results})
     except Exception as e:
