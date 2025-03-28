@@ -1,5 +1,6 @@
 import os, ssl, certifi
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from PIL import Image
 import torch
 import torch.nn as nn
@@ -11,6 +12,7 @@ ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=ce
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 app = Flask(__name__)
+CORS(app)  # ✅ 모든 출처 허용
 
 # 🔧 모델 및 라벨 불러오기
 MODEL_PATH = "model/efficientnet_b0_1500styles.pth"
