@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { FaFolderOpen, FaTrash } from 'react-icons/fa' // 📁 아이콘용 react-icons
+// import Image from 'next/image' // ❗next/image 쓰고 싶을 때 활성화
 
 export default function PredictPage() {
   const [file, setFile] = useState<File | null>(null)
@@ -9,7 +10,7 @@ export default function PredictPage() {
   const [loading, setLoading] = useState(false)
   const [preview, setPreview] = useState<string | null>(null)
   const [progress, setProgress] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
+  // const [isDragging, setIsDragging] = useState(false) // ❌ 사용 안하므로 제거하거나 주석 처리
 
   // ✅ 미리보기 URL 생성
   useEffect(() => {
@@ -21,12 +22,11 @@ export default function PredictPage() {
     setPreview(null)
   }, [file])
 
-
-  // ✅ 여기에 wakeServer 함수 선언
+  // ✅ 서버 깨우기
   const wakeServer = async () => {
     try {
       await fetch('https://machinefinaldeploy-production.up.railway.app/')
-    } catch (e) {
+    } catch {
       console.warn("서버 깨우기 실패 (무시해도 됨)")
     }
   }
@@ -34,25 +34,23 @@ export default function PredictPage() {
   const handleUpload = async () => {
     if (!file) return
 
-    // ✅ 2. 예측 시작 전에 서버 깨우기
     await wakeServer()
 
-    // ✅ 여기에 넣어줘!
-    if (file && !file.type.startsWith("image/")) {
-        alert("❗️이미지 파일만 업로드할 수 있어요.")
-        return
+    if (!file.type.startsWith("image/")) {
+      alert("❗️이미지 파일만 업로드할 수 있어요.")
+      return
     }
 
-    if (file && file.size > 5 * 1024 * 1024) {
-        alert("❗️5MB 이하 이미지만 업로드할 수 있어요.")
-        return
+    if (file.size > 5 * 1024 * 1024) {
+      alert("❗️5MB 이하 이미지만 업로드할 수 있어요.")
+      return
     }
 
     const formData = new FormData()
     formData.append('image', file)
 
-    const maxTimeout = 40000 // 40초
-    const updateInterval = 1000 // 1초마다 progress 업데이트
+    const maxTimeout = 40000
+    const updateInterval = 1000
     const steps = maxTimeout / updateInterval
 
     setProgress(0)
@@ -61,7 +59,6 @@ export default function PredictPage() {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), maxTimeout)
 
-    // 🌈 진행 바용 인터벌 타이머
     const intervalId = setInterval(() => {
       setProgress(prev => {
         const next = prev + 100 / steps
@@ -79,29 +76,21 @@ export default function PredictPage() {
       clearTimeout(timeoutId)
       clearInterval(intervalId)
 
-      // ✅ 응답 상태코드 확인
       if (!res.ok) {
         alert(`❌ 서버에서 오류가 발생했어요. (${res.status})`)
-        throw new Error("응답 오류")  // 🔥 여기서 throw로 catch로 보냄
+        throw new Error("응답 오류")
       }
 
-      // ✅ JSON 응답 안전하게 처리
-      const data = await res.json()
+      const data: { top3: { label: string; confidence: number }[] } = await res.json()
       setResult(data.top3)
-
-      // ✅ 바를 즉시 100%로 채움
       setProgress(100)
-
-      // ✅ 잠깐 보여주고 로딩 종료
       setTimeout(() => {
         setLoading(false)
         setProgress(0)
-      }, 200) // 0.2초 후 숨김
-
-      
-    } catch (err: any) {
+      }, 200)
+    } catch (err) {
       clearInterval(intervalId)
-      if (err.name === 'AbortError') {
+      if (err instanceof Error && err.name === 'AbortError') {
         alert("⏱️ 서버 응답이 너무 느려요.")
       } else {
         console.error('❌ 예측 실패:', err)
@@ -109,7 +98,7 @@ export default function PredictPage() {
       }
       setResult(null)
       setProgress(0)
-      setLoading(false)  // 실패한 경우만 여기서 처리
+      setLoading(false)
     }
   }
 
@@ -122,13 +111,13 @@ export default function PredictPage() {
     <div className="max-w-xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-4">🎨 화풍(사조) 예측기</h1>
 
-    {/* 🔽 드래그 앤 드롭 박스 */}
-    <div
-        onDragOver={(e) => e.preventDefault()}
+      {/* 🔽 드래그 앤 드롭 박스 */}
+      <div
+        onDragOver={(_e) => _e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault()
           const droppedFile = e.dataTransfer.files?.[0]
-          if (droppedFile && droppedFile.type.startsWith("image/")) {
+          if (droppedFile?.type.startsWith("image/")) {
             setFile(droppedFile)
           } else {
             alert("❗ 이미지 파일만 드롭할 수 있어요.")
@@ -137,6 +126,7 @@ export default function PredictPage() {
         className="border-4 border-dashed border-indigo-400 hover:border-indigo-600 transition-colors duration-300 rounded-xl p-8 text-center bg-indigo-50 dark:bg-zinc-800 mb-6"
       >
         {preview ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={preview}
             alt="미리보기"
@@ -147,10 +137,8 @@ export default function PredictPage() {
         )}
       </div>
 
-
-    {/* ✅ 파일 선택 + 예측 버튼 */}
-    <div className="flex items-center justify-between mb-2">
-        {/* 파일 선택 버튼 */}
+      {/* ✅ 파일 선택 + 예측 버튼 */}
+      <div className="flex items-center justify-between mb-2">
         <label className="flex items-center gap-2 cursor-pointer bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm font-medium py-2 px-4 rounded">
           <FaFolderOpen className="text-gray-600" />
           파일 선택
@@ -162,7 +150,6 @@ export default function PredictPage() {
           />
         </label>
 
-        {/* 예측하기 버튼 */}
         <button
           onClick={handleUpload}
           disabled={!file || loading}
@@ -170,11 +157,9 @@ export default function PredictPage() {
         >
           예측하기
         </button>
-    </div>
+      </div>
 
-
-    {/* 선택된 파일명 표시 */}
-    {file ? (
+      {file ? (
         <div className="flex items-center justify-between text-sm text-gray-400 mb-6">
           <span>선택된 파일: {file.name}</span>
           <button onClick={handleRemove} className="text-red-400 hover:text-red-600">
