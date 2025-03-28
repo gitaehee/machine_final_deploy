@@ -25,7 +25,7 @@ export default function PredictPage() {
   // ✅ 여기에 wakeServer 함수 선언
   const wakeServer = async () => {
     try {
-      await fetch('https://style-predict-backend.onrender.com')
+      await fetch('https://machinefinaldeploy-production.up.railway.app/')
     } catch (e) {
       console.warn("서버 깨우기 실패 (무시해도 됨)")
     }
@@ -70,7 +70,7 @@ export default function PredictPage() {
     }, updateInterval)
 
     try {
-      const res = await fetch('https://style-predict-backend.onrender.com/predict', {
+      const res = await fetch('https://machinefinaldeploy-production.up.railway.app/predict', {
         method: 'POST',
         body: formData,
         signal: controller.signal,
@@ -186,7 +186,7 @@ export default function PredictPage() {
       )}
 
       {loading && (
-        <div className="w-full max-w-sm bg-gray-200 rounded-full h-2 mt-4 overflow-hidden">
+        <div className="w-full max-w-xs bg-gray-200 rounded-full h-2 mt-4 overflow-hidden">
           <div
             className="bg-indigo-600 h-2 transition-all duration-1000"
             style={{ width: `${progress}%` }}
