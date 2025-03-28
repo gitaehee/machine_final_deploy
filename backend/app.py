@@ -65,12 +65,22 @@ def predict(image):
 @app.route("/predict", methods=["POST"])
 def predict_api():
     if 'image' not in request.files:
+        print("❌ 이미지가 요청에 포함되지 않았어요.")
         return jsonify({"error": "이미지 파일이 필요합니다"}), 400
 
     file = request.files['image']
-    image = Image.open(file.stream).convert("RGB")
-    results = predict(image)
-    return jsonify({"top3": results})
+    print(f"📸 받은 파일 이름: {file.filename}")
+    
+    try:
+        image = Image.open(file.stream).convert("RGB")
+        print("✅ 이미지 열기 성공")
+
+        results = predict(image)
+        print(f"🔮 예측 결과: {results}")
+        return jsonify({"top3": results})
+    except Exception as e:
+        print(f"❌ 예측 중 오류 발생: {e}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))  # ✅ Render 호환용

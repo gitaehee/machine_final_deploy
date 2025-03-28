@@ -10,6 +10,17 @@ export default function PredictPage() {
   const handleUpload = async () => {
     if (!file) return
 
+    // ✅ 여기에 넣어줘!
+    if (file && !file.type.startsWith("image/")) {
+        alert("❗️이미지 파일만 업로드할 수 있어요.")
+        return
+    }
+
+    if (file && file.size > 5 * 1024 * 1024) {
+        alert("❗️5MB 이하 이미지만 업로드할 수 있어요.")
+        return
+    }
+
     const formData = new FormData()
     formData.append('image', file)
 
