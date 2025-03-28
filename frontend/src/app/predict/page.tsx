@@ -7,6 +7,9 @@ export default function PredictPage() {
   const [result, setResult] = useState<{ label: string; confidence: number }[] | null>(null)
   const [loading, setLoading] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+
+
 
   // ✅ 여기에 wakeServer 함수 선언
   const wakeServer = async () => {
@@ -103,31 +106,66 @@ export default function PredictPage() {
     <div className="max-w-xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-4">🎨 화풍(사조) 예측기</h1>
 
-      <input
-        type="file"
-        accept="image/*"
-        onChange={e => setFile(e.target.files?.[0] || null)}
-        className="mb-4"
-      />
+      {/* 🔽 드래그 앤 드롭 박스 (이 위치!) */}
+    <div
+      onDragOver={(e) => {
+        e.preventDefault()
+        setIsDragging(true)
+      }}
+      onDragLeave={() => setIsDragging(false)}
+      onDrop={(e) => {
+        e.preventDefault()
+        setIsDragging(false)
+        const droppedFile = e.dataTransfer.files?.[0]
+        if (droppedFile && droppedFile.type.startsWith("image/")) {
+          setFile(droppedFile)
+        } else {
+          alert("❗ 이미지 파일만 드롭할 수 있어요.")
+        }
+      }}
+      className={`border-2 border-dashed rounded-md p-6 text-center mb-4 transition-colors ${
+        isDragging ? "border-indigo-500 bg-indigo-50" : "border-gray-400"
+      }`}
+    >
+      {file ? (
+        <p className="text-sm text-gray-600">📂 선택된 파일: {file.name}</p>
+      ) : (
+        <p className="text-gray-500">👉 여기에 이미지를 드래그하거나 아래에서 파일 선택</p>
+      )}
+    </div>
 
-      <button
+    <label className="inline-block cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded mb-2">
+        파일 선택
+        <input
+            type="file"
+            accept="image/*"
+            onChange={e => setFile(e.target.files?.[0] || null)}
+            className="hidden"
+        />
+    </label>
+
+    <p className="text-sm text-gray-400 mb-4">
+        {file ? `선택된 파일: ${file.name}` : "선택된 파일 없음"}
+    </p>
+
+    <button
         onClick={handleUpload}
         className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded"
         disabled={!file || loading}
-      >
+    >
         예측하기
-      </button>
+    </button>
 
-      {loading && (
+    {loading && (
         <div className="w-full max-w-sm bg-gray-200 rounded-full h-2 mt-4 overflow-hidden">
           <div
             className="bg-indigo-600 h-2 transition-all duration-1000"
             style={{ width: `${progress}%` }}
           />
         </div>
-      )}
+    )}
 
-      {result && (
+    {result && (
         result.length === 1 && result[0].label === "해당되는 사조가 없습니다" ? (
           <p className="text-orange-500 mt-4">😥 {result[0].label} (확률: {result[0].confidence})</p>
         ) : (
