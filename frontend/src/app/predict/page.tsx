@@ -68,7 +68,7 @@ export default function PredictPage() {
       // ✅ 응답 상태코드 확인
       if (!res.ok) {
         alert(`❌ 서버에서 오류가 발생했어요. (${res.status})`)
-        return
+        throw new Error("응답 오류")  // 🔥 여기서 throw로 catch로 보냄
       }
 
       // ✅ JSON 응답 안전하게 처리
@@ -82,21 +82,20 @@ export default function PredictPage() {
       setTimeout(() => {
         setLoading(false)
         setProgress(0)
-      }, 300) // 0.3초 후 숨김
+      }, 200) // 0.2초 후 숨김
 
       
     } catch (err: any) {
-        if (err.name === 'AbortError') {
-          alert("⏱️ 서버 응답이 너무 느려요.\n다시 시도하거나 잠시 기다려 주세요.")
-        } else {
-          console.error('❌ 예측 실패:', err)
-          alert("❌ 예측에 실패했어요.\n서버가 꺼져 있거나 이미지가 너무 클 수 있어요.")
-        }
-        setResult(null)
-    } finally {
       clearInterval(intervalId)
-      setLoading(false)
-      setProgress(0) // ✅ 예측이 끝나거나 실패해도 무조건 false 처리
+      if (err.name === 'AbortError') {
+        alert("⏱️ 서버 응답이 너무 느려요.")
+      } else {
+        console.error('❌ 예측 실패:', err)
+        alert("❌ 예측에 실패했어요.")
+      }
+      setResult(null)
+      setProgress(0)
+      setLoading(false)  // 실패한 경우만 여기서 처리
     }
   }
 
@@ -120,9 +119,9 @@ export default function PredictPage() {
       </button>
 
       {loading && (
-        <div className="w-full bg-gray-200 rounded-full h-2 mt-4 overflow-hidden">
+        <div className="w-full max-w-sm bg-gray-200 rounded-full h-2 mt-4 overflow-hidden">
           <div
-            className="bg-indigo-600 h-4 transition-all duration-1000"
+            className="bg-indigo-600 h-2 transition-all duration-1000"
             style={{ width: `${progress}%` }}
           />
         </div>
