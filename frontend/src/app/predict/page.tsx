@@ -37,8 +37,19 @@ export default function PredictPage() {
       })
 
       clearTimeout(timeoutId)
+
+      // ✅ 응답 상태코드 확인
+      if (!res.ok) {
+        console.error('❌ 서버 응답 실패:', res.status)
+        alert(`❌ 서버에서 오류가 발생했어요. (${res.status})`)
+        return
+      }
+
+      // ✅ JSON 응답 안전하게 처리
       const data = await res.json()
+      console.log('✅ 예측 결과:', data)
       setResult(data.top3)
+
       
     } catch (err) {
         console.error('❌ 예측 실패:', err)
