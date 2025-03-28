@@ -15,7 +15,9 @@ ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=ce
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 app = Flask(__name__)
-CORS(app)  # ✅ 모든 출처 허용
+
+# 모든 라우트에 대해 모든 origin 허용 + credentials 지원
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # 🔧 모델 및 라벨 불러오기
 MODEL_PATH = "model/efficientnet_b0_1500styles.pth"
