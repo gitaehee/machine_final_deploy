@@ -27,7 +27,7 @@ export default function PredictPage() {
     setLoading(true)
 
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 15000)
+    const timeoutId = setTimeout(() => controller.abort(), 40000)
 
     try {
       const res = await fetch('https://style-predict-backend.onrender.com/predict', {
@@ -51,12 +51,16 @@ export default function PredictPage() {
       setResult(data.top3)
 
       
-    } catch (err) {
-        console.error('❌ 예측 실패:', err)
+    } catch (err: any) {
+        if (err.name === 'AbortError') {
+          alert("⏱️ 서버 응답이 너무 느려요.\n다시 시도하거나 잠시 기다려 주세요.")
+        } else {
+          console.error('❌ 예측 실패:', err)
+          alert("❌ 예측에 실패했어요.\n서버가 꺼져 있거나 이미지가 너무 클 수 있어요.")
+        }
         setResult(null)
-        alert("❌ 예측에 실패했어요.\n서버가 꺼져 있거나 이미지가 너무 클 수 있어요.")
-      } finally {
-        setLoading(false)
+    } finally {
+      setLoading(false) // ✅ 예측이 끝나거나 실패해도 무조건 false 처리
     }
   }
 
@@ -76,7 +80,15 @@ export default function PredictPage() {
         className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded"
         disabled={!file || loading}
       >
-        {loading ? '예측 중...' : '예측하기'}
+        {loading ? (
+            <span className="flex items-center">
+                <svg className="animate-spin h-4 w-4 mr-2 text-white" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8z" />
+                </svg>
+                예측 중...
+            </span>
+        ) : '예측하기'}
       </button>
 
       {result && (
