@@ -6,9 +6,22 @@ export default function PredictPage() {
   const [file, setFile] = useState<File | null>(null)
   const [result, setResult] = useState<{ label: string; confidence: number }[] | null>(null)
   const [loading, setLoading] = useState(false)
+  const [progress, setProgress] = useState(0)
+
+  // ✅ 여기에 wakeServer 함수 선언
+  const wakeServer = async () => {
+    try {
+      await fetch('https://style-predict-backend.onrender.com')
+    } catch (e) {
+      console.warn("서버 깨우기 실패 (무시해도 됨)")
+    }
+  }
 
   const handleUpload = async () => {
     if (!file) return
+
+    // ✅ 2. 예측 시작 전에 서버 깨우기
+    await wakeServer()
 
     // ✅ 여기에 넣어줘!
     if (file && !file.type.startsWith("image/")) {
@@ -24,10 +37,23 @@ export default function PredictPage() {
     const formData = new FormData()
     formData.append('image', file)
 
+    const maxTimeout = 40000 // 40초
+    const updateInterval = 1000 // 1초마다 progress 업데이트
+    const steps = maxTimeout / updateInterval
+
+    setProgress(0)
     setLoading(true)
 
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 40000)
+    const timeoutId = setTimeout(() => controller.abort(), maxTimeout)
+
+    // 🌈 진행 바용 인터벌 타이머
+    const intervalId = setInterval(() => {
+      setProgress(prev => {
+        const next = prev + 100 / steps
+        return next >= 100 ? 100 : next
+      })
+    }, updateInterval)
 
     try {
       const res = await fetch('https://style-predict-backend.onrender.com/predict', {
@@ -37,18 +63,26 @@ export default function PredictPage() {
       })
 
       clearTimeout(timeoutId)
+      clearInterval(intervalId)
 
       // ✅ 응답 상태코드 확인
       if (!res.ok) {
-        console.error('❌ 서버 응답 실패:', res.status)
         alert(`❌ 서버에서 오류가 발생했어요. (${res.status})`)
         return
       }
 
       // ✅ JSON 응답 안전하게 처리
       const data = await res.json()
-      console.log('✅ 예측 결과:', data)
       setResult(data.top3)
+
+      // ✅ 바를 즉시 100%로 채움
+      setProgress(100)
+
+      // ✅ 잠깐 보여주고 로딩 종료
+      setTimeout(() => {
+        setLoading(false)
+        setProgress(0)
+      }, 300) // 0.3초 후 숨김
 
       
     } catch (err: any) {
@@ -60,7 +94,9 @@ export default function PredictPage() {
         }
         setResult(null)
     } finally {
-      setLoading(false) // ✅ 예측이 끝나거나 실패해도 무조건 false 처리
+      clearInterval(intervalId)
+      setLoading(false)
+      setProgress(0) // ✅ 예측이 끝나거나 실패해도 무조건 false 처리
     }
   }
 
@@ -80,22 +116,23 @@ export default function PredictPage() {
         className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded"
         disabled={!file || loading}
       >
-        {loading ? (
-            <span className="flex items-center">
-                <svg className="animate-spin h-4 w-4 mr-2 text-white" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8z" />
-                </svg>
-                예측 중...
-            </span>
-        ) : '예측하기'}
+        예측하기
       </button>
+
+      {loading && (
+        <div className="w-full bg-gray-200 rounded-full h-2 mt-4 overflow-hidden">
+          <div
+            className="bg-indigo-600 h-4 transition-all duration-1000"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
 
       {result && (
         result.length === 1 && result[0].label === "해당되는 사조가 없습니다" ? (
-          <p className="text-red-500 mt-4">😥 {result[0].label} (확률: {result[0].confidence})</p>
+          <p className="text-orange-500 mt-4">😥 {result[0].label} (확률: {result[0].confidence})</p>
         ) : (
-          <ul className="list-disc pl-6">
+            <ul className="list-disc pl-6 mt-4">
               {result.map((item, idx) => (
               <li key={idx}>
                   {idx + 1}위: <strong>{item.label}</strong> (확률: {item.confidence})
