@@ -118,8 +118,8 @@ export default function PredictPage() {
           e.preventDefault()
           const droppedFile = e.dataTransfer.files?.[0]
           if (droppedFile?.type.startsWith("image/")) {
-            setFile(droppedFile)
             setResult(null) // 예측 결과 초기화
+            setFile(droppedFile)
           } else {
             alert("❗ 이미지 파일만 드롭할 수 있어요.")
           }
@@ -148,8 +148,8 @@ export default function PredictPage() {
             accept="image/*"
             onChange={e => {
               const selectedFile = e.target.files?.[0] || null
-              setFile(selectedFile)
               setResult(null) // 예측 결과 초기화
+              setFile(selectedFile)
             }}
             className="hidden"
           />
