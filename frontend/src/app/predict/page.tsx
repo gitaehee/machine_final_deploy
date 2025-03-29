@@ -103,6 +103,7 @@ export default function PredictPage() {
   }
 
   const handleRemove = () => {
+    setResult(null)      // 예측 결과 초기화 먼저
     setFile(null)
     setPreview(null)
   }
@@ -148,7 +149,7 @@ export default function PredictPage() {
             accept="image/*"
             onChange={e => {
               const selectedFile = e.target.files?.[0] || null
-              setResult(null) // 예측 결과 초기화
+              setResult(null) // 예측 결과 초기화. 얘가 setFile 보다 먼저 있어야함
               setFile(selectedFile)
             }}
             className="hidden"
