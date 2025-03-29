@@ -103,7 +103,6 @@ export default function PredictPage() {
   }
 
   const handleRemove = () => {
-    setResult(null)      // 예측 결과 초기화 먼저
     setFile(null)
     setPreview(null)
   }
