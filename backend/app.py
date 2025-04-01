@@ -20,12 +20,19 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # 🔧 모델 및 라벨 불러오기
-MODEL_PATH = "model/efficientnet_b0_1500styles.pth"
-CSV_PATH = "model/balanced_data_1500.csv"
+MODEL_PATH = "model/b0_final.pth"
 
-df = pd.read_csv(CSV_PATH)
-df["style"] = df["style"].fillna("unknown").astype(str)
-labels = sorted(df["style"].unique())
+# 🔄 모든 temp CSV 불러오기
+df_train = pd.read_csv("model/train_temp.csv")
+df_val   = pd.read_csv("model/val_temp.csv")
+df_test  = pd.read_csv("model/test_temp.csv")
+
+# 🔁 합치기 + 라벨 처리
+df_all = pd.concat([df_train, df_val, df_test], ignore_index=True)
+df_all["style"] = df_all["style"].fillna("unknown").astype(str)
+
+# ✅ 전체 라벨 기준으로 label2idx 생성
+labels = sorted(df_all["style"].unique())
 label2idx = {label: idx for idx, label in enumerate(labels)}
 idx2label = {v: k for k, v in label2idx.items()}
 
