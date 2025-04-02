@@ -46,6 +46,22 @@ labels = sorted(df_all["style"].unique())
 label2idx = {label: idx for idx, label in enumerate(labels)}
 idx2label = {v: k for k, v in label2idx.items()}
 
+# ✅ 기존 idx2label 생성 코드 아래에 추가하세요.
+style_translations = {
+    'Realism': '사실주의', 
+    'Romanticism': '낭만주의', 
+    'Art Nouveau (Modern)': '아르누보', 
+    'Impressionism': '인상주의',
+    'Surrealism': '초현실주의',  
+    'Expressionism': '표현주의',  
+    'Northern Renaissance': '북부 르네상스',  
+    'Rococo': '로코코 양식', 
+    'Baroque': '바로크 양식'
+}
+
+# ✅ idx2label을 한글로 번역
+idx2label_korean = {idx: style_translations.get(label, label) for idx, label in idx2label.items()}
+
 def get_model(num_classes):
     weights = EfficientNet_B0_Weights.IMAGENET1K_V1
     model = models.efficientnet_b0(weights=weights)
@@ -79,7 +95,7 @@ def predict(image, threshold=0.3):
     top3 = []
     for prob, idx in zip(top3_probs[0], top3_indices[0]):
         top3.append({
-            "label": idx2label[idx.item()],
+            "label": idx2label_korean[idx.item()],
             "confidence": round(prob.item(), 4)  # ✅ 퍼센트 X, 그대로 확률
         })
     return top3
