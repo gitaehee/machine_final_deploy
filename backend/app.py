@@ -7,6 +7,16 @@ import torch.nn as nn
 import pandas as pd
 from torchvision import transforms, models
 from torchvision.models import EfficientNet_B0_Weights
+import random
+import numpy as np
+
+# 시드 고정 (학습과 동일하게)
+random.seed(1986)
+np.random.seed(1986)
+torch.manual_seed(1986)
+torch.cuda.manual_seed(1986)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
 
 Image.MAX_IMAGE_PIXELS = None  # ✅ 큰 이미지 제한 해제
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -55,7 +65,7 @@ val_transform = transforms.Compose([
 ])
 
 # 🔮 예측 함수
-def predict(image, threshold=0.5):
+def predict(image, threshold=0.3):
     image = val_transform(image).unsqueeze(0).to(device)
     with torch.no_grad():
         outputs = model(image)
@@ -89,7 +99,7 @@ def predict_api():
         image = Image.open(file.stream).convert("RGB")
         print("✅ 이미지 열기 성공")
 
-        results = predict(image, threshold=0.5)
+        results = predict(image, threshold=0.3)
         print(f"🔮 예측 결과: {results}")
         return jsonify({"top3": results})
     except Exception as e:
