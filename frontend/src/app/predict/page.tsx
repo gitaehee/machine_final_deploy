@@ -185,18 +185,52 @@ export default function PredictPage() {
       )}
 
       {result && result.length > 0 && (
-        result[0].label === "해당되는 사조가 없습니다" ? (
-          <p className="text-orange-500 mt-4">😥 {result[0].label} (확률: {result[0].confidence})</p>
-        ) : (
-          <ul className="list-disc pl-6 mt-4">
-            {result.map((item, idx) => (
-              <li key={idx}>
-                {idx + 1}위: <strong>{item.label}</strong> (확률: {item.confidence})
-              </li>
-            ))}
-          </ul>
-        )
+        // ✨ 조건에 따른 렌더링 로직 변경
+        (() => {
+          const first = result[0]
+          const second = result[1]
+          const third = result[2]
+
+          const firstAbove = first && first.confidence >= 0.3
+          const secondAbove = second && second.confidence >= 0.3
+          const thirdAbove = third && third.confidence >= 0.3
+
+          if (firstAbove) {
+            return (
+              <div className="mt-4">
+                {/* ✨ 1위만 강조 */}
+                <p className="text-yellow-600 font-bold text-lg">
+                  🎉 당신의 작품 사조는 <strong>{first.label}</strong>입니다! (확률: {first.confidence})
+                </p>
+
+                {/* ✨ 2, 3위 추가 안내 */}
+                {(secondAbove || thirdAbove) && (
+                  <div className="mt-4 text-sm text-white-700">
+                    <p>🔎 추가로 이런 사조도 비슷해 보입니다:</p>
+                    <ul className="list-disc pl-6 mt-2">
+                      {secondAbove && (
+                        <li>
+                          2위: <strong>{second.label}</strong> (확률: {second.confidence})
+                        </li>
+                      )}
+                      {thirdAbove && (
+                        <li>
+                          3위: <strong>{third.label}</strong> (확률: {third.confidence})
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )
+          } else {
+            return (
+              <p className="text-orange-500 mt-4">😥 해당되는 사조가 없습니다 (모든 예측 확률이 0.3 미만)</p>
+            )
+          }
+        })()
       )}
+
     </div>
   )
 }
