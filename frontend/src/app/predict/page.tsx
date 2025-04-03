@@ -200,7 +200,8 @@ export default function PredictPage() {
               <div className="mt-4">
                 {/* ✨ 1위만 강조 */}
                 <p className="text-yellow-600 font-bold text-lg">
-                  🎉 당신의 작품 사조는 <strong>{first.label}</strong>입니다! (확률: {first.confidence})
+                  🎉 당신의 작품 사조는 <strong>{first.label}</strong>입니다! 
+                  (확률: {(first.confidence * 100).toFixed(1)}%)
                 </p>
 
                 {/* ✨ 2, 3위 추가 안내 */}
@@ -210,12 +211,14 @@ export default function PredictPage() {
                     <ul className="list-disc pl-6 mt-2">
                       {secondAbove && (
                         <li>
-                          2위: <strong>{second.label}</strong> (확률: {second.confidence})
+                          2위: <strong>{second.label}</strong> 
+                          (확률: {(second.confidence * 100).toFixed(1)}%)
                         </li>
                       )}
                       {thirdAbove && (
                         <li>
-                          3위: <strong>{third.label}</strong> (확률: {third.confidence})
+                          3위: <strong>{third.label}</strong> 
+                          (확률: {(third.confidence * 100).toFixed(1)}%)
                         </li>
                       )}
                     </ul>
