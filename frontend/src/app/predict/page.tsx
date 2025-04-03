@@ -204,7 +204,7 @@ export default function PredictPage() {
               '인상주의': 'Impressionism',
               '표현주의': 'Expressionism',
               '바로크 양식': 'Baroque',
-              '아르누보': 'ArtNouveau(Modern)',
+              '아르누보': 'ArtNouveau',
               '북부 르네상스': 'NorthernRenaissance',
               '초현실주의': 'Surrealism',
               '로코코 양식': 'Rococo'

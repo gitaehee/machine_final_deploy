@@ -50,7 +50,7 @@ idx2label = {v: k for k, v in label2idx.items()}
 style_translations = {
     'Realism': '사실주의', 
     'Romanticism': '낭만주의', 
-    'Art Nouveau (Modern)': '아르누보', 
+    'Art Nouveau': '아르누보',
     'Impressionism': '인상주의',
     'Surrealism': '초현실주의',  
     'Expressionism': '표현주의',  
