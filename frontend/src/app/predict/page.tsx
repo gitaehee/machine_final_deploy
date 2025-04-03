@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { FaFolderOpen, FaTrash } from 'react-icons/fa' // 📁 아이콘용 react-icons
 // import Image from 'next/image' // ❗next/image 쓰고 싶을 때 활성화
+import AutoSlider from '../../../components/AutoSlider'
 
-export default function PredictPage() {
+export default function PredictPage() { 
   const [file, setFile] = useState<File | null>(null)
   const [result, setResult] = useState<{ label: string; confidence: number }[] | null>(null)
   const [loading, setLoading] = useState(false)
@@ -241,28 +242,9 @@ export default function PredictPage() {
                 )}
 
                 {/* 여기서 샘플 이미지 3장을 추가 */}
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="flex justify-center items-center">
-                    <img
-                      src={`/sample/${label}1.jpg`}
-                      alt={`${first.label} 예시 1`}
-                      className="rounded shadow-md max-h-64"
-                    />
-                  </div>
-                  <div className="flex justify-center items-center">
-                    <img
-                      src={`/sample/${label}2.jpg`}
-                      alt={`${first.label} 예시 2`}
-                      className="rounded shadow-md max-h-64"
-                    />
-                  </div>
-                  <div className="flex justify-center items-center">
-                    <img
-                      src={`/sample/${label}3.jpg`}
-                      alt={`${first.label} 예시 3`}
-                      className="rounded shadow-md max-h-64"
-                    />
-                  </div>
+                <div className="mt-6">
+                  <p className="font-semibold mb-2">🖼️ {first.label} 대표 작품 예시:</p>
+                  <AutoSlider label={label} />
                 </div>
               </div>
             )
