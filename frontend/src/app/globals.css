@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fbf9f5; /* 밝은 크림톤 */
+  --foreground: #3f3a34; /* 다크 브라운 계열 글자색 */
 }
 
 @theme inline {
@@ -14,8 +14,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: rgb(25, 25, 25);
-    --foreground: #ededed;
+    --background: #1f1e1c; /* 고급 다크 브라운 */
+    --foreground: #f4eee7; /* 따뜻한 회백 글자색 */
   }
 }
 

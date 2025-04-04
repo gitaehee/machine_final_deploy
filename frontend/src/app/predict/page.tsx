@@ -109,153 +109,162 @@ export default function PredictPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-4">🎨 화풍(사조) 예측기</h1>
+    <div className="max-w-2xl mx-auto px-4 py-10 space-y-8 font-sans">
+      <h1 className="text-center text-[42px] leading-tight font-serif text-[#caa27a] mb-8 drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">
+        🎨 <span className="italic tracking-wide">Know Your Style</span>
+      </h1>
 
-      {/* 🔽 드래그 앤 드롭 박스 */}
-      <div
-        onDragOver={(_e) => _e.preventDefault()}
-        onDrop={(e) => {
-          e.preventDefault()
-          const droppedFile = e.dataTransfer.files?.[0]
-          if (droppedFile?.type.startsWith("image/")) {
-            setResult(null) // 예측 결과 초기화
-            setFile(droppedFile)
-          } else {
-            alert("❗ 이미지 파일만 드롭할 수 있어요.")
-          }
-        }}
-        className="border-4 border-dashed border-indigo-400 hover:border-indigo-600 transition-colors duration-300 rounded-xl p-8 text-center bg-indigo-50 dark:bg-zinc-800 mb-6"
-      >
-        {preview ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={preview}
-            alt="미리보기"
-            className="mx-auto max-h-64 rounded shadow-md"
-          />
-        ) : (
-          <p className="text-gray-500">👉 여기에 이미지를 드래그하거나 아래에서 파일을 선택해 주세요.</p>
+      {/* 업로드 카드 */}
+      <div className="rounded-xl border border-[#e8dac9] bg-[#fffaf3] p-6 shadow-inner">
+        <h2 className="text-lg font-semibold text-[#6e584f] mb-4">
+          📤 이미지 업로드
+        </h2>
+
+        <div
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault()
+            const droppedFile = e.dataTransfer.files?.[0]
+            if (droppedFile?.type.startsWith("image/")) {
+              setResult(null)
+              setFile(droppedFile)
+            } else {
+              alert("❗ 이미지 파일만 드롭할 수 있어요.")
+            }
+          }}
+          className="border-2 border-dashed border-[#d3b49f] hover:border-[#c9a27e] rounded-xl p-6 text-center bg-[#fdf6ec] transition"
+        >
+          {preview ? (
+            <img
+              src={preview}
+              alt="미리보기"
+              className="mx-auto max-h-64 rounded-xl shadow-sm"
+            />
+          ) : (
+            <p className="text-[#a49386]">
+              👉 이미지를 드래그하거나 아래에서 파일을 선택해 주세요.
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between mt-4">
+          <label className="flex items-center gap-2 cursor-pointer bg-[#efe2d1] hover:bg-[#e4d4bf] text-[#4b3f36] text-sm font-medium py-2 px-4 rounded-lg transition">
+            <FaFolderOpen className="text-[#6e584f]" />
+            파일 선택
+            <input
+              type="file"
+              accept="image/*"
+              onChange={e => {
+                const selectedFile = e.target.files?.[0] || null
+                setResult(null)
+                setFile(selectedFile)
+              }}
+              className="hidden"
+            />
+          </label>
+
+          <button
+            onClick={handleUpload}
+            disabled={!file || loading}
+            className="bg-[#c9a27e] hover:bg-[#b89174] text-white font-semibold py-2 px-5 rounded-lg shadow-sm disabled:opacity-50 transition"
+          >
+            예측하기
+          </button>
+        </div>
+
+        <div className="text-sm text-[#998675] mt-2 flex justify-between">
+          {file ? (
+            <>
+              <span>선택된 파일: {file.name}</span>
+              <button onClick={handleRemove} className="text-[#b27363] hover:text-[#a15f4d]">
+                <FaTrash className="inline-block mr-1" /> 삭제
+              </button>
+            </>
+          ) : (
+            <span>선택된 파일 없음</span>
+          )}
+        </div>
+
+        {loading && (
+          <div className="w-full bg-[#e8dac9] rounded-full h-2 mt-6 overflow-hidden">
+            <div
+              className="bg-[#c9a27e] h-2 transition-all duration-1000"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
         )}
       </div>
 
-      {/* ✅ 파일 선택 + 예측 버튼 */}
-      <div className="flex items-center justify-between mb-2">
-        <label className="flex items-center gap-2 cursor-pointer bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm font-medium py-2 px-4 rounded">
-          <FaFolderOpen className="text-gray-600" />
-          파일 선택
-          <input
-            type="file"
-            accept="image/*"
-            onChange={e => {
-              const selectedFile = e.target.files?.[0] || null
-              setResult(null) // 예측 결과 초기화. 얘가 setFile 보다 먼저 있어야함
-              setFile(selectedFile)
-            }}
-            className="hidden"
-          />
-        </label>
+      {/* 결과 카드 */}
+      {result && result.length > 0 && (() => {
+        const first = result[0]
+        const second = result[1]
+        const third = result[2]
 
-        <button
-          onClick={handleUpload}
-          disabled={!file || loading}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-5 rounded disabled:opacity-50"
-        >
-          예측하기
-        </button>
-      </div>
+        const firstAbove = first && first.confidence >= 0.3
+        const secondAbove = second && second.confidence >= 0.3
+        const thirdAbove = third && third.confidence >= 0.3
 
-      {file ? (
-        <div className="flex items-center justify-between text-sm text-gray-400 mb-6">
-          <span>선택된 파일: {file.name}</span>
-          <button onClick={handleRemove} className="text-red-400 hover:text-red-600">
-            <FaTrash className="inline-block mr-1" /> 삭제
-          </button>
-        </div>
-      ) : (
-        <p className="text-sm text-gray-400 mb-6">선택된 파일 없음</p>
-      )}
-
-      {loading && (
-        <div className="w-full max-w-xs bg-gray-200 rounded-full h-2 mt-4 overflow-hidden">
-          <div
-            className="bg-indigo-600 h-2 transition-all duration-1000"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      )}
-
-      {result && result.length > 0 && (
-        // ✨ 조건에 따른 렌더링 로직 변경
-        (() => {
-          const first = result[0]
-          const second = result[1]
-          const third = result[2]
-
-          const firstAbove = first && first.confidence >= 0.3
-          const secondAbove = second && second.confidence >= 0.3
-          const thirdAbove = third && third.confidence >= 0.3
-
-          if (firstAbove) {
-
-            const labelMap: Record<string, string> = {
-              '사실주의': 'Realism',
-              '낭만주의': 'Romanticism',
-              '인상주의': 'Impressionism',
-              '표현주의': 'Expressionism',
-              '바로크 양식': 'Baroque',
-              '아르누보': 'ArtNouveau(Modern)',
-              '북부 르네상스': 'NorthernRenaissance',
-              '초현실주의': 'Surrealism',
-              '로코코 양식': 'Rococo'
-            }
-            
-            const label = labelMap[first.label] || first.label.replace(/\s/g, '')
-
-            return (
-              <div className="mt-4">
-                {/* ✨ 1위만 강조 */}
-                <p className="text-yellow-600 font-bold text-lg">
-                  🎉 당신의 작품 사조는 <strong>{first.label}</strong>입니다! 
-                  (확률: {(first.confidence * 100).toFixed(1)}%)
-                </p>
-
-                {/* ✨ 2, 3위 추가 안내 */}
-                {(secondAbove || thirdAbove) && (
-                  <div className="mt-4 text-sm text-white-700">
-                    <p>🔎 추가로 이런 사조도 비슷해 보입니다:</p>
-                    <ul className="list-disc pl-6 mt-2">
-                      {secondAbove && (
-                        <li>
-                          2위: <strong>{second.label}</strong> 
-                          (확률: {(second.confidence * 100).toFixed(1)}%)
-                        </li>
-                      )}
-                      {thirdAbove && (
-                        <li>
-                          3위: <strong>{third.label}</strong> 
-                          (확률: {(third.confidence * 100).toFixed(1)}%)
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-                )}
-
-                {/* 여기서 샘플 이미지 3장을 추가 */}
-                <div className="mt-6">
-                  <p className="font-semibold mb-2">🖼️ {first.label} 대표 작품 예시:</p>
-                  <AutoSlider label={label} />
-                </div>
-              </div>
-            )
-          } else {
-            return (
-              <p className="text-orange-500 mt-4">😥 해당되는 사조가 없습니다 (모든 예측 확률이 0.3 미만)</p>
-            )
+        if (firstAbove) {
+          const labelMap: Record<string, string> = {
+            '사실주의': 'Realism',
+            '낭만주의': 'Romanticism',
+            '인상주의': 'Impressionism',
+            '표현주의': 'Expressionism',
+            '바로크 양식': 'Baroque',
+            '아르누보': 'ArtNouveau(Modern)',
+            '북부 르네상스': 'NorthernRenaissance',
+            '초현실주의': 'Surrealism',
+            '로코코 양식': 'Rococo'
           }
-        })()
-      )}
 
+          const label = labelMap[first.label] || first.label.replace(/\s/g, '')
+
+          return (
+            <div className="rounded-xl border border-[#e8dac9] bg-[#fffaf3] p-6 shadow-inner">
+              <h2 className="text-lg font-semibold text-[#6e584f] mb-4">
+                🔍 예측 결과
+              </h2>
+
+              <p className="text-[#a17c6b] font-semibold text-xl mb-2">
+                🎉 당신의 작품 사조는 <span className="font-bold text-[#5f5048]">{first.label}</span>입니다!
+                <span className="ml-1 text-sm">({(first.confidence * 100).toFixed(1)}%)</span>
+              </p>
+
+              {(secondAbove || thirdAbove) && (
+                <div className="mt-3 text-sm text-[#6e584f]">
+                  <p>📌 추가로 이런 사조도 비슷해 보입니다:</p>
+                  <ul className="list-disc pl-6 mt-2 space-y-1">
+                    {secondAbove && (
+                      <li>
+                        2위: <strong>{second.label}</strong> ({(second.confidence * 100).toFixed(1)}%)
+                      </li>
+                    )}
+                    {thirdAbove && (
+                      <li>
+                        3위: <strong>{third.label}</strong> ({(third.confidence * 100).toFixed(1)}%)
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              )}
+
+              <div className="mt-6">
+                <p className="font-medium text-[#5c4b3c] mb-2">🖼️ {first.label} 대표 작품 예시:</p>
+                <AutoSlider label={label} />
+              </div>
+            </div>
+          )
+        } else {
+          return (
+            <div className="rounded-xl border border-[#e6cfc0] bg-[#f9ece0] text-[#b35c4b] p-6 text-center shadow-sm">
+              😥 해당되는 사조가 없습니다 (모든 예측 확률이 0.3 미만)
+            </div>
+          )
+        }
+      })()}
     </div>
+
+
   )
 }
