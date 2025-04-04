@@ -30,7 +30,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # 🔧 모델 및 라벨 불러오기
-MODEL_PATH = "model/b0_final.pth"
+MODEL_PATH = "model/b3_final_15.pth"
 
 # 🔄 모든 temp CSV 불러오기
 df_train = pd.read_csv("model/train_temp.csv")
@@ -63,8 +63,8 @@ style_translations = {
 idx2label_korean = {idx: style_translations.get(label, label) for idx, label in idx2label.items()}
 
 def get_model(num_classes):
-    weights = EfficientNet_B0_Weights.IMAGENET1K_V1
-    model = models.efficientnet_b0(weights=weights)
+    weights = models.EfficientNet_B3_Weights.IMAGENET1K_V1
+    model = models.efficientnet_b3(weights=weights)
     in_features = model.classifier[1].in_features
     model.classifier[1] = nn.Linear(in_features, num_classes)
     model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
@@ -74,7 +74,7 @@ model = get_model(len(labels))
 
 # 🔄 전처리
 val_transform = transforms.Compose([
-    transforms.Resize((224, 224)),
+    transforms.Resize((300, 300)),
     transforms.ToTensor(),
     transforms.Normalize([0.485, 0.456, 0.406],
                          [0.229, 0.224, 0.225])
